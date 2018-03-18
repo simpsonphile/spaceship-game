@@ -2,6 +2,7 @@
 import {Player} from './player';
 import {Meteor} from './meteor';
 import {Bullet} from './bullet';
+import {Supply} from './supply';
 import {Game} from './game';
 
 
@@ -12,6 +13,7 @@ const game = new Game(30);
 const player = new Player(1.42,5-0.16);
 let meteors = [];
 let bullets = [];
+let supplies = [];
 game.animate();
 game.resize();
 
@@ -30,4 +32,4 @@ window.addEventListener('keyup', function(e){
 
 
 //exports
-export {game, player, keyMapDown, meteors, bullets};
+export {game, player, keyMapDown, meteors, bullets, supplies};

@@ -73,23 +73,26 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.bullets = exports.meteors = exports.keyMapDown = exports.player = exports.game = undefined;
+exports.supplies = exports.bullets = exports.meteors = exports.keyMapDown = exports.player = exports.game = undefined;
 
-var _player = __webpack_require__(3);
+var _player = __webpack_require__(4);
 
 var _meteor = __webpack_require__(2);
 
 var _bullet = __webpack_require__(1);
 
-var _game = __webpack_require__(4);
+var _supply = __webpack_require__(3);
+
+var _game = __webpack_require__(5);
 
 //initialization
-//imports
-var keyMapDown = [];
+var keyMapDown = []; //imports
+
 var game = new _game.Game(30);
 var player = new _player.Player(1.42, 5 - 0.16);
 var meteors = [];
 var bullets = [];
+var supplies = [];
 game.animate();
 game.resize();
 
@@ -115,6 +118,7 @@ exports.player = player;
 exports.keyMapDown = keyMapDown;
 exports.meteors = meteors;
 exports.bullets = bullets;
+exports.supplies = supplies;
 
 /***/ }),
 /* 1 */
@@ -157,7 +161,6 @@ var Bullet = function () {
         if (distance <= this.r + _main.meteors[i].r) {
           this.dead = true;
           _main.meteors[i].gotHit(this.damage);
-          _main.player.points += _main.meteors[i].startHp;
         }
       }
     }
@@ -215,7 +218,7 @@ var Meteor = function () {
 
     this.dx = (Math.random() - Math.ceil(Math.random() - 0.5)) / 20;
     this.dy = Math.random() / 20;
-    this.r = Math.random() / 5;
+    this.r = Math.random() / 5 + 0.1;
     this.dead = false;
     this.hp = 3 + Math.floor(_main.player.points / 1000);
     this.startHp = this.hp;
@@ -242,8 +245,8 @@ var Meteor = function () {
     }
   }, {
     key: "gotHit",
-    value: function gotHit() {
-      this.hp--;
+    value: function gotHit(damage) {
+      this.hp -= damage;
       if (this.hp <= 0) this.dead = true;
     }
   }, {
@@ -271,6 +274,83 @@ exports.Meteor = Meteor;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Supply = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _main = __webpack_require__(0);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Supply = function () {
+  function Supply(x, y, kind) {
+    _classCallCheck(this, Supply);
+
+    this.r = 0.075;
+    if (x == undefined && y == undefined) {
+      this.x = Math.floor(Math.random() * 3) + Math.random();
+      this.y = 0;
+    } else {
+      this.x = x;
+      this.y = y;
+    }
+
+    if (kind == undefined) {
+      if (Math.random() < 0.2 && _main.player.lives < 5) this.kind = 'live';else if (Math.random() < 0.90) this.kind = 'bullets';else this.kind = "powerBullets";
+    } else {
+      this.kind = kind;
+    }
+
+    if (this.kind === 'bullets') {
+      this.color = 'green';
+      this.symbol = '⊕';
+    } else if (this.kind === 'live') {
+      this.color = 'red';
+      this.symbol = '♥';
+    } else if (this.kind === 'powerBullets') {
+      this.color = 'blue';
+      this.symbol = '♣';
+    }
+  }
+
+  _createClass(Supply, [{
+    key: 'move',
+    value: function move() {
+      this.y += 0.005;
+    }
+  }, {
+    key: 'draw',
+    value: function draw() {
+      _main.game.ctx.beginPath();
+      _main.game.ctx.fillStyle = this.color;
+      // game.ctx.rect(this.x*game.scale,this.y*game.scale,this.r*2*game.scale,this.r*2*game.scale);
+      _main.game.ctx.font = "16px sans-serif";
+      _main.game.ctx.fillText(this.symbol, this.x * _main.game.scale, this.y * _main.game.scale);
+      _main.game.ctx.fill();
+    }
+  }, {
+    key: 'update',
+    value: function update() {
+      this.draw();
+      this.move();
+    }
+  }]);
+
+  return Supply;
+}();
+
+exports.Supply = Supply;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -315,7 +395,7 @@ var Player = function () {
         this.y - this.r / 2, //y
         0.01, //r
         0.05, //s
-        1, //d
+        this.damage, //d
         0.002)); //as
         this.amo--;
       }
@@ -327,14 +407,31 @@ var Player = function () {
       if (this.lives <= 0) this.gameOver();else this.reset(false);
     }
   }, {
-    key: 'checkForColision',
-    value: function checkForColision() {
+    key: 'checkForColisionWithMeteor',
+    value: function checkForColisionWithMeteor() {
       for (var i = 0; i < _main.meteors.length; i++) {
+        //colision with meteors
         var dx = _main.meteors[i].x - this.x + this.r / 2;
         var dy = _main.meteors[i].y - this.y - this.r / 2;
         var distance = Math.sqrt(dx * dx + dy * dy);
         if (distance <= this.r / 2 + _main.meteors[i].r) {
           this.loseLife();
+        }
+      }
+    }
+  }, {
+    key: 'checkForColisionWithSupply',
+    value: function checkForColisionWithSupply() {
+      for (var i = _main.supplies.length - 1; i >= 0; i--) {
+        var dx = _main.supplies[i].x - this.x + this.r / 2;
+        var dy = _main.supplies[i].y - this.y - this.r / 2;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= this.r / 2 + _main.supplies[i].r) {
+          //kolizja
+          if (_main.supplies[i].kind === 'live' && this.lives < 5) this.lives++;else if (_main.supplies[i].kind === 'bullets') this.amo += 50;else if (_main.supplies[i].kind === 'powerBullets') this.damage += 1;
+          _main.supplies.splice(i, 1);
+          i--;
+          this.points += 100;
         }
       }
     }
@@ -379,7 +476,8 @@ var Player = function () {
   }, {
     key: 'update',
     value: function update() {
-      this.checkForColision();
+      this.checkForColisionWithMeteor();
+      this.checkForColisionWithSupply();
       this.move();
       this.draw();
     }
@@ -391,7 +489,7 @@ var Player = function () {
 exports.Player = Player;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -407,6 +505,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _main = __webpack_require__(0);
 
 var _meteor = __webpack_require__(2);
+
+var _supply = __webpack_require__(3);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -463,12 +563,18 @@ var Game = function () {
         _main.player.update();
 
         //meteors
-        if (Math.random() > 0.95 - _main.player.points / 50000) _main.meteors.push(new _meteor.Meteor());
+        if (Math.random() > 0.95 - _main.player.points / 30000) _main.meteors.push(new _meteor.Meteor());
         for (var i = _main.meteors.length - 1; i >= 0; i--) {
 
+          if (_main.meteors[i].dead) {
+            _main.player.points += _main.meteors[i].startHp;
+            _main.player.amo += _main.meteors[i].startHp * 2;
+          }
           if (_main.meteors[i].y - _main.meteors[i].r > 5 || _main.meteors[i].dead) {
             //usun jak wylecial za mapke
+            if (Math.random() > 0.99) _main.supplies.push(new _supply.Supply(_main.meteors[i].x, _main.meteors[i].y));
             _main.meteors.splice(i, 1);
+
             continue;
           }
 
@@ -484,26 +590,33 @@ var Game = function () {
           _main.bullets[i].update();
         }
 
+        //supplies
+        if (Math.random() > 0.999) _main.supplies.push(new _supply.Supply());
+        for (var i = _main.supplies.length - 1; i >= 0; i--) {
+          _main.supplies[i].update();
+          console.log("x");
+        }
+
         //lives and points and amo
         this.ctx.font = "24px sans-serif";
-        this.ctx.strokeStyle = "red";
+        this.ctx.fillStyle = "red";
         var hearts = "";
         for (var _i = 0; _i < _main.player.lives; _i++) {
           hearts += "♥ ";
-        }this.ctx.strokeText(hearts, 2 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
-        this.ctx.stroke();
+        }this.ctx.fillText(hearts, 2 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
+        this.ctx.fill();
 
         this.ctx.font = "16px sans-serif";
-        this.ctx.strokeStyle = "white";
+        this.ctx.fillStyle = "white";
         var amoText = void 0;
         if (_main.player.amo >= 1000) amoText = "999+";else amoText = _main.player.amo;
-        this.ctx.strokeText(amoText + " amo", 2 * this.scale, 0.4 * this.scale, 0.7 * this.scale);
-        this.ctx.stroke();
+        this.ctx.fillText("⊕ " + amoText + "   ♣ " + _main.player.damage, 2 * this.scale, 0.4 * this.scale, 0.7 * this.scale);
+        this.ctx.fill();
 
         this.ctx.font = "18px sans-serif";
-        this.ctx.strokeStyle = "white";
-        this.ctx.strokeText(Math.floor(_main.player.points), 0.1 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
-        this.ctx.stroke();
+        this.ctx.fillStyle = "white";
+        this.ctx.fillText(Math.floor(_main.player.points), 0.1 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
+        this.ctx.fill();
 
         _main.player.points += 1 / 10;
         //code ends here

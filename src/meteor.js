@@ -4,7 +4,7 @@ class Meteor {
   constructor(){
     this.dx = (Math.random()-Math.ceil(Math.random()-0.5))/20;
     this.dy = Math.random()/20;
-    this.r = Math.random()/5;
+    this.r = Math.random()/5+0.1;
     this.dead = false;
     this.hp = 3+Math.floor(player.points/1000);
     this.startHp = this.hp;
@@ -26,8 +26,8 @@ class Meteor {
     this.y+=this.dy;
   }
 
-  gotHit(){
-    this.hp--;
+  gotHit(damage){
+    this.hp-=damage;
     if(this.hp<=0)this.dead = true;
   }
 

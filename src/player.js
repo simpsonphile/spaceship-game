@@ -1,4 +1,4 @@
-import {game, keyMapDown, meteors, bullets} from './main';
+import {game, keyMapDown, meteors, bullets, supplies} from './main';
 import {Bullet} from './bullet';
 
 class Player {
@@ -26,7 +26,7 @@ class Player {
         this.y-this.r/2,//y
         0.01,//r
         0.05,//s
-        1,//d
+        this.damage,//d
         0.002));//as
       this.amo--;
     }
@@ -38,13 +38,31 @@ class Player {
     else this.reset(false);
   }
 
-  checkForColision() {
-    for (var i = 0; i < meteors.length; i++) {
+  checkForColisionWithMeteor() {
+    for (var i = 0; i < meteors.length; i++) {//colision with meteors
       const dx = meteors[i].x - this.x+this.r/2;
       const dy = meteors[i].y - this.y-this.r/2;
       const distance = Math.sqrt(dx * dx + dy * dy);
       if (distance <= this.r/2 + meteors[i].r) {
           this.loseLife();
+      }
+    }
+  }
+
+
+  checkForColisionWithSupply() {
+    for(var i = supplies.length-1;i>=0;i--){
+      const dx = supplies[i].x - this.x+this.r/2;
+      const dy = supplies[i].y - this.y-this.r/2;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance <= this.r/2 + supplies[i].r) {
+        //kolizja
+        if(supplies[i].kind==='live' && this.lives<5)this.lives++;
+        else if(supplies[i].kind==='bullets')this.amo+=50;
+        else if(supplies[i].kind==='powerBullets')this.damage+=1;
+        supplies.splice(i,1);
+        i--;
+        this.points+=100;
       }
     }
   }
@@ -81,7 +99,8 @@ class Player {
   }
 
   update(){
-    this.checkForColision();
+    this.checkForColisionWithMeteor();
+    this.checkForColisionWithSupply();
     this.move();
     this.draw();
   }

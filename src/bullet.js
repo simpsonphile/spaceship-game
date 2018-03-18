@@ -19,7 +19,6 @@ class Bullet {
       if (distance <= this.r + meteors[i].r) {
           this.dead = true;
           meteors[i].gotHit(this.damage);
-          player.points+=meteors[i].startHp;
       }
     }
   }
