@@ -10,6 +10,7 @@ class Player {
     this.lives = 5;
     this.points = 0;
     this.damage = 1;
+    this.amo = 1000;
   }
 
   move(){
@@ -19,7 +20,16 @@ class Player {
     if(keyMapDown[68] && this.x+this.dx+this.r<=3)this.x+=this.dx;
     else if(keyMapDown[65] && this.x-this.dx>=0)this.x-=this.dx;
 
-    if(keyMapDown[32])bullets.push(new Bullet(this.x+this.r/2,this.y-this.r/2,0.01,0.1,1));
+    if(keyMapDown[32] && this.amo>0){
+      bullets.push(new Bullet(
+        this.x+this.r/2,//x
+        this.y-this.r/2,//y
+        0.01,//r
+        0.05,//s
+        1,//d
+        0.002));//as
+      this.amo--;
+    }
   }
 
   loseLife(){
@@ -50,6 +60,7 @@ class Player {
     this.y = 4.84;
     while(meteors.length>0)meteors.pop();
     while(keyMapDown.length>0)keyMapDown.pop();
+    while(bullets.length>0)bullets.pop();
   }
 
   gameOver(){

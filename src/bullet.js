@@ -1,11 +1,12 @@
 import {game, player, meteors} from './main';
 
 class Bullet {
-  constructor(x,y,r,s,d){
+  constructor(x,y,r,s,d,as){
     this.x = x;
     this.y = y;
     this.r = r;
     this.s = s;
+    this.as = as;
     this.dead = false;
     this.damage = d;
   }
@@ -39,6 +40,7 @@ class Bullet {
 
   move(){
     this.y-=this.s;
+    this.s+=this.as;
   }
 
   update(){

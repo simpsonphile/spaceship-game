@@ -135,13 +135,14 @@ var _main = __webpack_require__(0);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Bullet = function () {
-  function Bullet(x, y, r, s, d) {
+  function Bullet(x, y, r, s, d, as) {
     _classCallCheck(this, Bullet);
 
     this.x = x;
     this.y = y;
     this.r = r;
     this.s = s;
+    this.as = as;
     this.dead = false;
     this.damage = d;
   }
@@ -174,6 +175,7 @@ var Bullet = function () {
     key: "move",
     value: function move() {
       this.y -= this.s;
+      this.s += this.as;
     }
   }, {
     key: "update",
@@ -215,7 +217,7 @@ var Meteor = function () {
     this.dy = Math.random() / 20;
     this.r = Math.random() / 5;
     this.dead = false;
-    this.hp = 3;
+    this.hp = 3 + Math.floor(_main.player.points / 1000);
     this.startHp = this.hp;
 
     if (Math.random <= 0.3) {
@@ -248,7 +250,9 @@ var Meteor = function () {
     key: "draw",
     value: function draw() {
       _main.game.ctx.beginPath();
-      _main.game.ctx.strokeStyle = "rgb(128,128,255)";
+      var darkerColor = Math.floor(255 - this.hp * 10) > 0 ? Math.floor(255 - this.hp * 10) : 0;
+      _main.game.ctx.strokeStyle = "rgb(" + darkerColor + "," + darkerColor + ",255)";
+
       _main.game.ctx.ellipse(this.x * _main.game.scale, this.y * _main.game.scale, this.r * _main.game.scale, this.r * _main.game.scale, 0, 0, Math.PI * 2, false);
       _main.game.ctx.stroke();
     }
@@ -296,6 +300,7 @@ var Player = function () {
     this.lives = 5;
     this.points = 0;
     this.damage = 1;
+    this.amo = 1000;
   }
 
   _createClass(Player, [{
@@ -305,7 +310,15 @@ var Player = function () {
 
       if (_main.keyMapDown[68] && this.x + this.dx + this.r <= 3) this.x += this.dx;else if (_main.keyMapDown[65] && this.x - this.dx >= 0) this.x -= this.dx;
 
-      if (_main.keyMapDown[32]) _main.bullets.push(new _bullet.Bullet(this.x + this.r / 2, this.y - this.r / 2, 0.01, 0.1, 1));
+      if (_main.keyMapDown[32] && this.amo > 0) {
+        _main.bullets.push(new _bullet.Bullet(this.x + this.r / 2, //x
+        this.y - this.r / 2, //y
+        0.01, //r
+        0.05, //s
+        1, //d
+        0.002)); //as
+        this.amo--;
+      }
     }
   }, {
     key: 'loseLife',
@@ -340,6 +353,8 @@ var Player = function () {
         _main.meteors.pop();
       }while (_main.keyMapDown.length > 0) {
         _main.keyMapDown.pop();
+      }while (_main.bullets.length > 0) {
+        _main.bullets.pop();
       }
     }
   }, {
@@ -448,12 +463,13 @@ var Game = function () {
         _main.player.update();
 
         //meteors
-        if (Math.random() > 0.95 - _main.player.points / 10000) _main.meteors.push(new _meteor.Meteor());
+        if (Math.random() > 0.95 - _main.player.points / 50000) _main.meteors.push(new _meteor.Meteor());
         for (var i = _main.meteors.length - 1; i >= 0; i--) {
 
           if (_main.meteors[i].y - _main.meteors[i].r > 5 || _main.meteors[i].dead) {
             //usun jak wylecial za mapke
             _main.meteors.splice(i, 1);
+            continue;
           }
 
           _main.meteors[i].update();
@@ -468,13 +484,20 @@ var Game = function () {
           _main.bullets[i].update();
         }
 
-        //lives and points
+        //lives and points and amo
         this.ctx.font = "24px sans-serif";
         this.ctx.strokeStyle = "red";
         var hearts = "";
         for (var _i = 0; _i < _main.player.lives; _i++) {
           hearts += "♥ ";
         }this.ctx.strokeText(hearts, 2 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
+        this.ctx.stroke();
+
+        this.ctx.font = "16px sans-serif";
+        this.ctx.strokeStyle = "white";
+        var amoText = void 0;
+        if (_main.player.amo >= 1000) amoText = "999+";else amoText = _main.player.amo;
+        this.ctx.strokeText(amoText + " amo", 2 * this.scale, 0.4 * this.scale, 0.7 * this.scale);
         this.ctx.stroke();
 
         this.ctx.font = "18px sans-serif";

@@ -1,4 +1,4 @@
-import {game} from './main';
+import {game, player} from './main';
 
 class Meteor {
   constructor(){
@@ -6,7 +6,7 @@ class Meteor {
     this.dy = Math.random()/20;
     this.r = Math.random()/5;
     this.dead = false;
-    this.hp = 3;
+    this.hp = 3+Math.floor(player.points/1000);
     this.startHp = this.hp;
 
     if(Math.random<=0.3){//spanwujemy na gorze
@@ -33,7 +33,9 @@ class Meteor {
 
   draw() {
     game.ctx.beginPath();
-    game.ctx.strokeStyle = "rgb(128,128,255)";
+    const darkerColor = Math.floor(255-this.hp*10)>0 ? Math.floor(255-this.hp*10) : 0;
+    game.ctx.strokeStyle = "rgb("+darkerColor+","+darkerColor+",255)";
+
     game.ctx.ellipse(
       this.x*game.scale,
       this.y*game.scale,

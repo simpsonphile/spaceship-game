@@ -50,11 +50,12 @@ class Game {
     player.update();
 
     //meteors
-    if(Math.random()>(0.95-player.points/10000))meteors.push(new Meteor());
+    if(Math.random()>(0.95-player.points/50000))meteors.push(new Meteor());
     for (var i = meteors.length-1; i>=0; i--) {
 
       if((meteors[i].y-meteors[i].r>5) || meteors[i].dead){//usun jak wylecial za mapke
         meteors.splice(i,1);
+        continue;
       }
 
       meteors[i].update();
@@ -68,14 +69,22 @@ class Game {
       }
       bullets[i].update();
     }
-    
 
-    //lives and points
+
+    //lives and points and amo
     this.ctx.font="24px sans-serif";
     this.ctx.strokeStyle = "red";
     let hearts="";
     for(let i = 0; i<player.lives; i++)hearts +="♥ ";
     this.ctx.strokeText(hearts, 2*this.scale,0.2*this.scale,0.7*this.scale);
+    this.ctx.stroke();
+
+    this.ctx.font="16px sans-serif";
+    this.ctx.strokeStyle = "white";
+    let amoText;
+    if(player.amo>=1000)amoText ="999+";
+    else amoText = player.amo;
+    this.ctx.strokeText(amoText+" amo", 2*this.scale,0.4*this.scale,0.7*this.scale);
     this.ctx.stroke();
 
 
