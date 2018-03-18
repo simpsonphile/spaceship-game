@@ -1,4 +1,5 @@
-import {game, keyMapDown, meteors} from './main';
+import {game, keyMapDown, meteors, bullets} from './main';
+import {Bullet} from './bullet';
 
 class Player {
   constructor(x,y){
@@ -7,6 +8,8 @@ class Player {
     this.dx = 0.03;
     this.r = 0.16;
     this.lives = 5;
+    this.points = 0;
+    this.damage = 1;
   }
 
   move(){
@@ -15,32 +18,42 @@ class Player {
 
     if(keyMapDown[68] && this.x+this.dx+this.r<=3)this.x+=this.dx;
     else if(keyMapDown[65] && this.x-this.dx>=0)this.x-=this.dx;
+
+    if(keyMapDown[32])bullets.push(new Bullet(this.x+this.r/2,this.y-this.r/2,0.01,0.1,1));
   }
 
   loseLife(){
-    while(meteors.length>0)meteors.pop();
-    this.x = 1.42;
-    this.y = 4.84;
     this.lives--;
     if(this.lives<=0) this.gameOver();
+    else this.reset(false);
   }
 
   checkForColision() {
     for (var i = 0; i < meteors.length; i++) {
       const dx = meteors[i].x - this.x+this.r/2;
-      const dy = meteors[i].y - this.y+this.r/2;
+      const dy = meteors[i].y - this.y-this.r/2;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < this.r + meteors[i].r/2) {
+      if (distance <= this.r/2 + meteors[i].r) {
           this.loseLife();
       }
     }
   }
 
+  reset(hardMode){
+    if(hardMode){
+      this.lives = 5;
+      game.time = 0;
+      this.points = 0;
+    }
 
+    this.x = 1.42;
+    this.y = 4.84;
+    while(meteors.length>0)meteors.pop();
+    while(keyMapDown.length>0)keyMapDown.pop();
+  }
 
   gameOver(){
-    this.lives = 5;
-    game.time = 0;
+    this.reset(true);
     alert("game over");
   }
 
@@ -57,8 +70,8 @@ class Player {
   }
 
   update(){
-    this.move();
     this.checkForColision();
+    this.move();
     this.draw();
   }
 }

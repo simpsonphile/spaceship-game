@@ -5,6 +5,9 @@ class Meteor {
     this.dx = (Math.random()-Math.ceil(Math.random()-0.5))/20;
     this.dy = Math.random()/20;
     this.r = Math.random()/5;
+    this.dead = false;
+    this.hp = 3;
+    this.startHp = this.hp;
 
     if(Math.random<=0.3){//spanwujemy na gorze
       this.y=0;
@@ -23,9 +26,14 @@ class Meteor {
     this.y+=this.dy;
   }
 
+  gotHit(){
+    this.hp--;
+    if(this.hp<=0)this.dead = true;
+  }
+
   draw() {
     game.ctx.beginPath();
-    game.ctx.strokeStyle = "white";
+    game.ctx.strokeStyle = "rgb(128,128,255)";
     game.ctx.ellipse(
       this.x*game.scale,
       this.y*game.scale,

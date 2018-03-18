@@ -1,4 +1,4 @@
-import {player, meteors} from './main';
+import {player, meteors, bullets} from './main';
 import {Meteor} from './meteor';
 //////////////////////////////////////////////////////////////////
 //game Class
@@ -9,7 +9,6 @@ class Game {
     this.delta;
     this.now;
     this.interval = 1000/this.fps;
-    this.time=0;
 
 
     this.canvasContainer = document.querySelector('#game-container');
@@ -36,6 +35,7 @@ class Game {
     this.canvas.width = this.scale * this.width;
   }
 
+
   animate() {
     requestAnimationFrame(this.animate.bind(this));
     this.now = Date.now();
@@ -50,15 +50,26 @@ class Game {
     player.update();
 
     //meteors
-    if(Math.random()>0.95-this.time/10000)meteors.push(new Meteor());
+    if(Math.random()>(0.95-player.points/10000))meteors.push(new Meteor());
     for (var i = meteors.length-1; i>=0; i--) {
-      meteors[i].update();
 
-      if(meteors[i].y-meteors[i].r>5){//usun jak wylecial za mapke
+      if((meteors[i].y-meteors[i].r>5) || meteors[i].dead){//usun jak wylecial za mapke
         meteors.splice(i,1);
       }
+
+      meteors[i].update();
     }
-    console.log(this.time);
+
+    //bullets
+    for (var i = bullets.length-1; i >= 0; i--) {
+      if((bullets[i].y<0) || bullets[i].dead){
+        bullets.splice(i,1);
+        continue;
+      }
+      bullets[i].update();
+    }
+    
+
     //lives and points
     this.ctx.font="24px sans-serif";
     this.ctx.strokeStyle = "red";
@@ -70,11 +81,11 @@ class Game {
 
     this.ctx.font="18px sans-serif";
     this.ctx.strokeStyle = "white";
-    this.ctx.strokeText(Math.floor(this.time/10), 0.1*this.scale,0.2*this.scale,0.7*this.scale);
+    this.ctx.strokeText(Math.floor(player.points), 0.1*this.scale,0.2*this.scale,0.7*this.scale);
     this.ctx.stroke();
 
-    this.time++;
 
+    player.points+=1/10;
     //code ends here
     ////////////////////////////////////////////////////////////////////
     this.then = this.now - (this.delta % this.interval);
