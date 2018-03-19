@@ -28,13 +28,15 @@ window.addEventListener('keydown', function(e){
 window.addEventListener('keyup', function(e){
   keyMapDown[e.keyCode] = false;
   if(e.keyCode==80 && game.pause==false){
-    game.interval = 10000;
+    game.interval = 9999999999;
     game.pause = true;
+    game.showCurrentLadderBoard();
   }
 
   else if(e.keyCode==80 && game.pause==true){
     game.interval = 1000/game.fps;
     game.pause = false;
+    game.modal.style.display = "none";
   }
 });
 

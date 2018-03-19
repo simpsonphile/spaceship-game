@@ -1,7 +1,7 @@
 import {game, player, meteors} from './main';
 
 class Bullet {
-  constructor(x,y,r,s,d,as){
+  constructor(x,y,r,s,d,as,dx){
     this.x = x;
     this.y = y;
     this.r = r;
@@ -9,6 +9,7 @@ class Bullet {
     this.as = as;
     this.dead = false;
     this.damage = d;
+    this.dx = dx;
   }
 
   checkForColision() {
@@ -38,6 +39,7 @@ class Bullet {
   }
 
   move(){
+    this.x+=this.dx;
     this.y-=this.s;
     this.s+=this.as;
   }

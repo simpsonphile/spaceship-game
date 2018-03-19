@@ -6,7 +6,7 @@ class Meteor {
     this.dy = Math.random()/20;
     this.r = Math.random()/5+0.1;
     this.dead = false;
-    this.hp = 3+Math.floor(player.points/1000);
+    this.hp = Math.floor(Math.random()*10)+Math.floor(player.points/1000);
     this.startHp = this.hp;
 
     if(Math.random<=0.3){//spanwujemy na gorze
@@ -33,8 +33,10 @@ class Meteor {
 
   draw() {
     game.ctx.beginPath();
-    const darkerColor = Math.floor(255-this.hp*10)>0 ? Math.floor(255-this.hp*10) : 0;
-    game.ctx.strokeStyle = "rgb("+darkerColor+","+darkerColor+",255)";
+    const colorRed = Math.floor(255-this.hp*4)>0 ? Math.floor(255-this.hp*10) : 0;
+    const colorGreen = Math.floor(255-this.hp*2)>0 ? Math.floor(255-this.hp*2) : 0;
+    const colorBlue = Math.floor(0+this.hp*5)<255 ? Math.floor(255-this.hp*5) : 255;
+    game.ctx.strokeStyle = "rgb("+colorRed+","+colorGreen+","+colorBlue+")";
 
     game.ctx.ellipse(
       this.x*game.scale,

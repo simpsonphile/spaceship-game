@@ -12,18 +12,36 @@
     margin: 0;
     box-sizing: border-box;
   }
+
   #game-container {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
   }
+
   #game-canvas {
     background: black;
     display: block;
   }
+
+  #ladderBoard {
+    position:absolute;
+    background: rgba(0,0,0,0.8);
+     display: none;
+    z-index: 10;
+    color: white;
+    padding: 10% 2%;
+    line-height: 2;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
 </style>
 <body>
   <div id="game-container">
+    <div id="ladderBoard">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam iure aliquam sunt repudiandae officia nostrum cumque dolores, rerum eligendi quam.</div>
     <canvas id="game-canvas"></canvas>
   </div>
 

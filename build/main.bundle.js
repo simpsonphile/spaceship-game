@@ -111,11 +111,13 @@ window.addEventListener('keydown', function (e) {
 window.addEventListener('keyup', function (e) {
   keyMapDown[e.keyCode] = false;
   if (e.keyCode == 80 && game.pause == false) {
-    game.interval = 10000;
+    game.interval = 9999999999;
     game.pause = true;
+    game.showCurrentLadderBoard();
   } else if (e.keyCode == 80 && game.pause == true) {
     game.interval = 1000 / game.fps;
     game.pause = false;
+    game.modal.style.display = "none";
   }
 });
 
@@ -146,7 +148,7 @@ var _main = __webpack_require__(0);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Bullet = function () {
-  function Bullet(x, y, r, s, d, as) {
+  function Bullet(x, y, r, s, d, as, dx) {
     _classCallCheck(this, Bullet);
 
     this.x = x;
@@ -156,6 +158,7 @@ var Bullet = function () {
     this.as = as;
     this.dead = false;
     this.damage = d;
+    this.dx = dx;
   }
 
   _createClass(Bullet, [{
@@ -184,6 +187,7 @@ var Bullet = function () {
   }, {
     key: "move",
     value: function move() {
+      this.x += this.dx;
       this.y -= this.s;
       this.s += this.as;
     }
@@ -227,7 +231,7 @@ var Meteor = function () {
     this.dy = Math.random() / 20;
     this.r = Math.random() / 5 + 0.1;
     this.dead = false;
-    this.hp = 3 + Math.floor(_main.player.points / 1000);
+    this.hp = Math.floor(Math.random() * 10) + Math.floor(_main.player.points / 1000);
     this.startHp = this.hp;
 
     if (Math.random <= 0.3) {
@@ -260,8 +264,10 @@ var Meteor = function () {
     key: "draw",
     value: function draw() {
       _main.game.ctx.beginPath();
-      var darkerColor = Math.floor(255 - this.hp * 10) > 0 ? Math.floor(255 - this.hp * 10) : 0;
-      _main.game.ctx.strokeStyle = "rgb(" + darkerColor + "," + darkerColor + ",255)";
+      var colorRed = Math.floor(255 - this.hp * 4) > 0 ? Math.floor(255 - this.hp * 10) : 0;
+      var colorGreen = Math.floor(255 - this.hp * 2) > 0 ? Math.floor(255 - this.hp * 2) : 0;
+      var colorBlue = Math.floor(0 + this.hp * 5) < 255 ? Math.floor(255 - this.hp * 5) : 255;
+      _main.game.ctx.strokeStyle = "rgb(" + colorRed + "," + colorGreen + "," + colorBlue + ")";
 
       _main.game.ctx.ellipse(this.x * _main.game.scale, this.y * _main.game.scale, this.r * _main.game.scale, this.r * _main.game.scale, 0, 0, Math.PI * 2, false);
       _main.game.ctx.stroke();
@@ -397,14 +403,41 @@ var Player = function () {
 
       if (_main.keyMapDown[68] && this.x + this.dx + this.r <= 3) this.x += this.dx;else if (_main.keyMapDown[65] && this.x - this.dx >= 0) this.x -= this.dx;
 
-      if (_main.keyMapDown[32] && this.amo > 0) {
+      if (_main.keyMapDown[32]) {
+        this.shoot();
+      }
+    }
+  }, {
+    key: 'shoot',
+    value: function shoot() {
+      if (this.amo > 0 && (this.damage < 5 || this.damage >= 10)) {
         _main.bullets.push(new _bullet.Bullet(this.x + this.r / 2, //x
-        this.y - this.r / 2, //y
+        this.y - this.r / 2 - 0.1, //y
         0.01, //r
         0.05, //s
         this.damage, //d
-        0.002)); //as
+        0.002, //as
+        0)); //dx
         this.amo--;
+      }
+
+      if (this.amo > 1 && this.damage >= 5) {
+        _main.bullets.push(new _bullet.Bullet(this.x, //x
+        this.y - this.r / 2 - 0.05, //y
+        0.01, //r
+        0.05, //s
+        Math.ceil(this.damage / 2), //d
+        0.002, //as
+        -0.005)); //dx
+
+        _main.bullets.push(new _bullet.Bullet(this.x + this.r, //x
+        this.y - this.r / 2 - 0.05, //y
+        0.01, //r
+        0.05, //s
+        Math.ceil(this.damage / 2), //d
+        0.002, //as
+        0.005)); //dx
+        this.amo -= 2;
       }
     }
   }, {
@@ -469,8 +502,12 @@ var Player = function () {
   }, {
     key: 'gameOver',
     value: function gameOver() {
+      var name = prompt("what's your name?");
+
+      _main.game.showCurrentLadderBoard(name, Math.floor(this.points));
       this.reset(true);
-      alert("game over");
+      _main.game.interval = 99999999;
+      _main.game.pause = true;
     }
   }, {
     key: 'draw',
@@ -537,6 +574,7 @@ var Game = function () {
 
     this.canvasContainer = document.querySelector('#game-container');
     this.canvas = document.querySelector('#game-canvas');
+    this.modal = document.querySelector('#ladderBoard');
 
     this.width = 3;
     this.height = 5;
@@ -559,6 +597,41 @@ var Game = function () {
 
       this.canvas.height = this.scale * this.height;
       this.canvas.width = this.scale * this.width;
+      this.modal.style.width = this.canvas.width + 'px';
+      this.modal.style.height = this.canvas.height + 'px';
+    }
+  }, {
+    key: 'showCurrentLadderBoard',
+    value: function showCurrentLadderBoard(name, score) {
+
+      //if ladderboard not exists set new one
+      if (localStorage.getItem("ladderBoard") == null) {
+        var obj = {
+          table: [{ name: "Henry", score: 9999 }, { name: "Henry", score: 8000 }, { name: "Henry", score: 7000 }, { name: "Paul", score: 4000 }]
+        };
+        localStorage.setItem("ladderBoard", JSON.stringify(obj));
+      }
+
+      var ladderBoard = JSON.parse(localStorage.getItem("ladderBoard"));
+
+      //if name and score is specifed add him to highscores
+      if (name && score) ladderBoard.table.push({ name: name, score: score });
+
+      //time to show first 10 sorted highscores
+      ladderBoard.table = ladderBoard.table.sort(function (a, b) {
+        if (a.score > b.score) return -1;else if (a.score < b.score) return 1;else return 0;
+      });
+
+      //time to actualize localStorage
+      localStorage.setItem("ladderBoard", JSON.stringify(ladderBoard));
+
+      //time to show ladderBoard
+      var message = "HighScore</br>";
+      for (var i = 0; i < ladderBoard.table.length; i++) {
+        message += ladderBoard.table[i].name + ": " + ladderBoard.table[i].score + "</br>";
+      }
+      this.modal.innerHTML = message;
+      this.modal.style.display = "block";
     }
   }, {
     key: 'animate',
@@ -572,6 +645,8 @@ var Game = function () {
         ////////////////////////////////////////////////////////////////////
         //code goes here
 
+        //ladderBoard
+
         //player
         _main.player.update();
 
@@ -582,7 +657,7 @@ var Game = function () {
 
           if (_main.meteors[i].dead) {
             _main.player.points += _main.meteors[i].startHp;
-            _main.player.amo += _main.meteors[i].startHp * 2;
+            _main.player.amo += _main.meteors[i].startHp;
             if (Math.random() > 0.99) _main.supplies.push(new _supply.Supply(_main.meteors[i].x, _main.meteors[i].y));
           }
           if (_main.meteors[i].y - _main.meteors[i].r > 5 || _main.meteors[i].dead) {
@@ -617,19 +692,16 @@ var Game = function () {
         for (var _i = 0; _i < _main.player.lives; _i++) {
           hearts += "♥ ";
         }this.ctx.fillText(hearts, 2 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
-        this.ctx.fill();
 
         this.ctx.font = "16px sans-serif";
         this.ctx.fillStyle = "white";
         var amoText = void 0;
         if (_main.player.amo >= 1000) amoText = "999+";else amoText = _main.player.amo;
         this.ctx.fillText("⊕ " + amoText + "   ♣ " + _main.player.damage, 2 * this.scale, 0.4 * this.scale, 0.7 * this.scale);
-        this.ctx.fill();
 
         this.ctx.font = "18px sans-serif";
         this.ctx.fillStyle = "white";
         this.ctx.fillText(Math.floor(_main.player.points), 0.1 * this.scale, 0.2 * this.scale, 0.7 * this.scale);
-        this.ctx.fill();
 
         _main.player.points += 1 / 10;
         //code ends here
