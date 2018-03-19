@@ -442,6 +442,8 @@ var Player = function () {
         this.lives = 5;
         _main.game.time = 0;
         this.points = 0;
+        this.damage = 1;
+        this.amo = 1000;
       }
 
       this.x = 1.42;
