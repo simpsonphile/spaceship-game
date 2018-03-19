@@ -110,6 +110,13 @@ window.addEventListener('keydown', function (e) {
 
 window.addEventListener('keyup', function (e) {
   keyMapDown[e.keyCode] = false;
+  if (e.keyCode == 80 && game.pause == false) {
+    game.interval = 10000;
+    game.pause = true;
+  } else if (e.keyCode == 80 && game.pause == true) {
+    game.interval = 1000 / game.fps;
+    game.pause = false;
+  }
 });
 
 //exports
@@ -304,7 +311,7 @@ var Supply = function () {
     }
 
     if (kind == undefined) {
-      if (Math.random() < 0.2 && _main.player.lives < 5) this.kind = 'live';else if (Math.random() < 0.90) this.kind = 'bullets';else this.kind = "powerBullets";
+      if (Math.random() < 0.2 && _main.player.lives < 5) this.kind = 'live';else if (Math.random() < 0.8) this.kind = 'bullets';else this.kind = "powerBullets";
     } else {
       this.kind = kind;
     }
@@ -444,6 +451,9 @@ var Player = function () {
         this.points = 0;
         this.damage = 1;
         this.amo = 1000;
+        while (_main.supplies.length > 0) {
+          _main.supplies.pop();
+        }
       }
 
       this.x = 1.42;
@@ -523,6 +533,7 @@ var Game = function () {
     this.delta;
     this.now;
     this.interval = 1000 / this.fps;
+    this.pause = false;
 
     this.canvasContainer = document.querySelector('#game-container');
     this.canvas = document.querySelector('#game-canvas');
@@ -571,12 +582,11 @@ var Game = function () {
           if (_main.meteors[i].dead) {
             _main.player.points += _main.meteors[i].startHp;
             _main.player.amo += _main.meteors[i].startHp * 2;
+            if (Math.random() > 0.99) _main.supplies.push(new _supply.Supply(_main.meteors[i].x, _main.meteors[i].y));
           }
           if (_main.meteors[i].y - _main.meteors[i].r > 5 || _main.meteors[i].dead) {
             //usun jak wylecial za mapke
-            if (Math.random() > 0.99) _main.supplies.push(new _supply.Supply(_main.meteors[i].x, _main.meteors[i].y));
             _main.meteors.splice(i, 1);
-
             continue;
           }
 
@@ -593,7 +603,7 @@ var Game = function () {
         }
 
         //supplies
-        if (Math.random() > 0.999) _main.supplies.push(new _supply.Supply());
+        if (Math.random() > 0.9975) _main.supplies.push(new _supply.Supply());
         for (var i = _main.supplies.length - 1; i >= 0; i--) {
           _main.supplies[i].update();
           console.log("x");

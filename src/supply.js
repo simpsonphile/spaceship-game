@@ -13,7 +13,7 @@ class Supply {
 
     if(kind==undefined){
       if(Math.random()<0.2 && player.lives<5)this.kind = 'live';
-      else if(Math.random()<0.90)this.kind = 'bullets';
+      else if(Math.random()<0.8)this.kind = 'bullets';
       else this.kind = "powerBullets";
     } else {
       this.kind = kind;

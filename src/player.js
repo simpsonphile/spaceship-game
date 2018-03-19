@@ -72,6 +72,9 @@ class Player {
       this.lives = 5;
       game.time = 0;
       this.points = 0;
+      this.damage = 1;
+      this.amo = 1000;
+      while(supplies.length>0)supplies.pop();
     }
 
     this.x = 1.42;

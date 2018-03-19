@@ -10,6 +10,7 @@ class Game {
     this.delta;
     this.now;
     this.interval = 1000/this.fps;
+    this.pause = false;
 
 
     this.canvasContainer = document.querySelector('#game-container');
@@ -57,11 +58,10 @@ class Game {
       if(meteors[i].dead){
         player.points+=meteors[i].startHp;
         player.amo+=meteors[i].startHp*2;
+        if(Math.random()>(0.99))supplies.push(new Supply(meteors[i].x,meteors[i].y));
       }
       if((meteors[i].y-meteors[i].r>5) || meteors[i].dead){//usun jak wylecial za mapke
-        if(Math.random()>(0.99))supplies.push(new Supply(meteors[i].x,meteors[i].y));
         meteors.splice(i,1);
-
         continue;
       }
 
@@ -78,7 +78,7 @@ class Game {
     }
 
     //supplies
-    if(Math.random()>(0.999))supplies.push(new Supply());
+    if(Math.random()>(0.9975))supplies.push(new Supply());
     for (var i = supplies.length-1; i >= 0; i--) {
       supplies[i].update();
       console.log("x");
