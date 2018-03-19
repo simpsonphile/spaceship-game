@@ -311,7 +311,7 @@ var Supply = function () {
     }
 
     if (kind == undefined) {
-      if (Math.random() < 0.2 && _main.player.lives < 5) this.kind = 'live';else if (Math.random() < 0.8) this.kind = 'bullets';else this.kind = "powerBullets";
+      if (Math.random() < 0.2 && _main.player.lives < 5) this.kind = 'live';else if (Math.random() < 0.87) this.kind = 'bullets';else this.kind = "powerBullets";
     } else {
       this.kind = kind;
     }
@@ -576,7 +576,8 @@ var Game = function () {
         _main.player.update();
 
         //meteors
-        if (Math.random() > 0.95 - _main.player.points / 30000) _main.meteors.push(new _meteor.Meteor());
+        if (Math.random() > 0.95 - (_main.player.points / 30000 < 7 / 30 ? _main.player.points / 30000 : 7 / 30)) _main.meteors.push(new _meteor.Meteor());
+
         for (var i = _main.meteors.length - 1; i >= 0; i--) {
 
           if (_main.meteors[i].dead) {
@@ -603,7 +604,7 @@ var Game = function () {
         }
 
         //supplies
-        if (Math.random() > 0.9975) _main.supplies.push(new _supply.Supply());
+        if (Math.random() > 0.9981) _main.supplies.push(new _supply.Supply());
         for (var i = _main.supplies.length - 1; i >= 0; i--) {
           _main.supplies[i].update();
           console.log("x");

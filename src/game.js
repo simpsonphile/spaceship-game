@@ -52,7 +52,8 @@ class Game {
     player.update();
 
     //meteors
-    if(Math.random()>(0.95-player.points/30000))meteors.push(new Meteor());
+    if(Math.random()>(0.95-(player.points/30000<7/30?player.points/30000:7/30)))meteors.push(new Meteor());
+
     for (var i = meteors.length-1; i>=0; i--) {
 
       if(meteors[i].dead){
@@ -78,7 +79,7 @@ class Game {
     }
 
     //supplies
-    if(Math.random()>(0.9975))supplies.push(new Supply());
+    if(Math.random()>(0.9981))supplies.push(new Supply());
     for (var i = supplies.length-1; i >= 0; i--) {
       supplies[i].update();
       console.log("x");
